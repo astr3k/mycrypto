@@ -3,15 +3,16 @@ from decimal import Decimal, ROUND_05UP, ROUND_HALF_UP
 from tabulate import tabulate
 
 # connect and/or create database;
-table = """ create table if not exists 'crypt' (
-            'date' datetime primary key default current_timestamp,
-            'euro' decimal(12,2) not null,
+table = """ create table if not exists crypto (
+            'date' datetime not null primary key default current_timestamp,
+            'euro' real not null,
+            'amount' real not null,
             'crypto' char(3) not null,
             'market' varchar(150) not null
         ); """
 
 try:
-    conn = sqlite3.connect('test.db')
+    conn = sqlite3.connect('mycrypto.db')
     cursor = conn.cursor()
     cursor.execute(table)
 

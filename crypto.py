@@ -12,7 +12,7 @@ table = """ create table if not exists crypto (
         ); """
 
 try:
-    conn = sqlite3.connect('mycrypto.db')
+    conn = sqlite3.connect('crypto.db')
     cursor = conn.cursor()
     cursor.execute(table)
 

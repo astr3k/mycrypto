@@ -5,10 +5,10 @@ from tabulate import tabulate
 # connect and/or create database;
 table = """ create table if not exists crypto (
             'date' datetime not null primary key default current_timestamp,
-            'euro' real not null,
+            'cents' integeer not null,
             'amount' real not null,
-            'crypto' char(3) not null,
-            'market' varchar(150) not null
+            'code' char(3) not null,
+            'remarks' varchar(150) not null
         ); """
 
 try:
@@ -24,13 +24,13 @@ finally:
         conn.close()
 
 try:
-    conn = sqlite3.connect('crypt.db')
+    conn = sqlite3.connect('crypto.db')
     cursor = conn.cursor()
-    cursor.execute('select sum(euro), sum(btc) from bitcoin')
+    cursor.execute("select sum(cents)/100.00 as euro, sum(amount), round((sum(cents)/100)/sum(amount), 2) as price FROM crypto where code = 'BTC';")
     btc = cursor.fetchall()
-    cursor.execute('select sum(euro), sum(xmr) from monero')
+    cursor.execute("select sum(cents)/100.00 as euro, sum(amount), round((sum(cents)/100)/sum(amount), 2) as price FROM crypto where code = 'XMR';")
     xmr = cursor.fetchall()
-    cursor.execute('select sum(euro), sum(ada) from cardano')
+    cursor.execute("select sum(cents)/100.00 as euro, sum(amount), round((sum(cents)/100)/sum(amount), 2) as price FROM crypto where code = 'ADA';")
     ada = cursor.fetchall()
     cursor.close()
 

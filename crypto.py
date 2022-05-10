@@ -1,5 +1,4 @@
 import urllib.request, json, sqlite3
-from decimal import Decimal, ROUND_05UP, ROUND_HALF_UP
 from tabulate import tabulate
 
 # connect and/or create database;
@@ -8,6 +7,7 @@ table = """ create table if not exists crypto (
             'cents' integeer not null,
             'amount' real not null,
             'code' char(3) not null,
+            'coin' varchar(15) not null,
             'remarks' varchar(150) not null
         ); """
 
@@ -26,13 +26,10 @@ finally:
 try:
     conn = sqlite3.connect('crypto.db')
     cursor = conn.cursor()
-    cursor.execute("select sum(cents)/100.00 as euro, sum(amount), round((sum(cents)/100)/sum(amount), 2) as price FROM crypto where code = 'BTC';")
-    btc = cursor.fetchall()
-    cursor.execute("select sum(cents)/100.00 as euro, sum(amount), round((sum(cents)/100)/sum(amount), 2) as price FROM crypto where code = 'XMR';")
-    xmr = cursor.fetchall()
-    cursor.execute("select sum(cents)/100.00 as euro, sum(amount), round((sum(cents)/100)/sum(amount), 2) as price FROM crypto where code = 'ADA';")
-    ada = cursor.fetchall()
+    cursor.execute("select coin, sum(cents)/100.00 as euro, sum(sum(cents)) over()/100.0 as total_eur, round(100.0*sum(cents) / sum(sum(cents)) over(), 2) as per, sum(amount), code, round(sum(cents)/sum(amount)/100, 2) as price FROM crypto group by code order by sum(cents) desc;")
+    all_coins = cursor.fetchall()
     cursor.close()
+
 
 except sqlite3.Error as error:
     print('Error occured - ', error)
@@ -42,49 +39,27 @@ finally:
         conn.close()
 
 
-# GET PRICES
-url = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin%2Ccardano%2Cmonero&vs_currencies=eur%2Cusd%2Cbtc"
-try: 
-    with urllib.request.urlopen(url) as u:
-        price = json.loads(u.read().decode())
-
-except urllib.Error as error:
-    print('Error occured - ', error)
-
-
-# Formating data
-t_btc = round(btc[0][1], 8)
-t_xmr = round(xmr[0][1], 10)
-t_ada = round(ada[0][1], 6)
-t_inv =  btc[0][0]+xmr[0][0]+ada[0][0]
-i_btc_per = round(100.0*btc[0][0]/t_inv, 2)
-i_xmr_per = round(100.0*xmr[0][0]/t_inv, 2)
-i_ada_per = round(100.0*ada[0][0]/t_inv, 2)
-
-ap_btc = round(float(btc[0][0]/t_btc), 2) 
-ap_xmr = round(float(xmr[0][0]/t_xmr), 2) 
-ap_ada = round(float(ada[0][0]/t_ada), 2) 
-
-p_btc = round(float(price['bitcoin']['eur']), 2)
-p_xmr = round(float(price['monero']['eur']), 2)
-p_ada = round(float(price['cardano']['eur']), 2)
-pb_btc = round(price['bitcoin']['btc'], 8)
-pb_xmr = round(price['monero']['btc'], 8)
-pb_ada = round(price['cardano']['btc'], 8)
-t_e_btc = p_btc * t_btc
-t_e_xmr = p_xmr * t_xmr
-t_e_ada = p_ada * t_ada
-total_e = t_e_btc + t_e_xmr + t_e_ada
-t_b_btc = round(pb_btc * t_btc, 8)
-t_b_xmr = round(pb_xmr * t_xmr, 8)
-t_b_ada = round(pb_ada * t_ada, 8)
-total_b = round(t_b_btc + t_b_xmr + t_b_ada, 8)
-
 # PRINT TABLE
-Table = [[              "amount",   "invest",   "%",        "avg price €",  "price €",  "price ₿",  "total ₿",  "total €",  "profit €" ],
-        [   "bct",      t_btc,      btc[0][0],  i_btc_per,  ap_btc,         p_btc,      pb_btc,     t_b_btc,    t_e_btc,    t_e_btc-btc[0][0]],
-        [   "xmr",      t_xmr,      xmr[0][0],  i_xmr_per,  ap_xmr,         p_xmr,      pb_xmr,     t_b_xmr,    t_e_xmr,    t_e_xmr-xmr[0][0]],
-        [   "ada",      t_ada,      ada[0][0],  i_ada_per,  ap_ada,         p_ada,      pb_ada,     t_b_ada,    t_e_ada,    t_e_ada-ada[0][0]],
-        [   "TOTAL",    "",         t_inv,      "",         "",             "",         "",         total_b,    total_e,    total_e-t_inv]]
+tablaa = [("invest", "%", "amount", "code", "avg price €", "price €", "total €", "profit €", "price ₿")]
+for row in all_coins:
+    rowl = list(row)
+    # GET PRICES
+    
+    url = "https://api.coingecko.com/api/v3/simple/price?ids="+rowl[0]+"&vs_currencies=eur%2Cbtc"
+    try:
+        with urllib.request.urlopen(url) as u:
+            price = json.loads(u.read().decode())
 
-print(tabulate(Table, headers=("firstrow"), floatfmt="0.2f", colalign=("left", "left", "right", "right", "right", "right",)))
+    except urllib.Error as error:
+        print('Error occured - ', error)
+    
+    t_invest = round(rowl[2], 2)
+    rowl.pop(2)
+    rowl.append(price[row[0]]['eur'])
+    rowl.append(price[row[0]]['eur']*row[4])
+    rowl.append(price[row[0]]['eur']*row[4]-row[1])
+    rowl.append(round(price[row[0]]['btc'], 8))
+    tablaa.append(rowl)
+tablaa.append(("", float(t_invest),100,"","",0.00,0.00,0.00,0,""))
+print(tabulate(tablaa, headers=("firstrow"), floatfmt="0.2f"))
+

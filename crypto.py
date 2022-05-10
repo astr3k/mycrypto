@@ -41,7 +41,7 @@ finally:
 
 # PRINT TABLE
 tablaa = [("invest", "%", "amount", "code", "avg price €", "price €", "total €", "profit €", "price ₿")]
-t_total = 0
+t_total = t_profit = 0
 for row in all_coins:
     rowl = list(row)
     # GET PRICES
@@ -60,8 +60,9 @@ for row in all_coins:
     rowl.append(price[row[0]]['eur']*row[4])
     t_total = t_total+price[row[0]]['eur']*row[4]
     rowl.append(price[row[0]]['eur']*row[4]-row[1])
+    t_profit = t_profit + price[row[0]]['eur']*row[4]-row[1]
     rowl.append(round(price[row[0]]['btc'], 8))
     tablaa.append(rowl)
-tablaa.append(("", float(t_invest),100,"","",0.00,0,t_total,0,""))
+tablaa.append(("", float(t_invest),100,"","",0,0,t_total,t_profit,""))
 print(tabulate(tablaa, headers=("firstrow"), floatfmt="0.2f"))
 

@@ -1,8 +1,9 @@
 import urllib.request, json, sqlite3
 from tabulate import tabulate
-
+import mydatabase
+ 
 # connect and/or create database;
-table = """ create table if not exists crypto (
+create_table = """ create table if not exists crypto (
             'date' datetime not null primary key default current_timestamp,
             'cents' integeer not null,
             'amount' real not null,
@@ -14,7 +15,7 @@ table = """ create table if not exists crypto (
 try:
     conn = sqlite3.connect('crypto.db')
     cursor = conn.cursor()
-    cursor.execute(table)
+    cursor.execute(create_table)
 
 except sqlite3.Error as error:
     print('Error occured - ', error)
@@ -40,8 +41,8 @@ finally:
 
 
 # PRINT TABLE
-tablaa = [("invest", "%", "amount", "code", "avg price €", "price €", "total €", "profit €", "price ₿")]
-t_total = t_profit = 0
+tablaa = [("invest", "%", "amount", "code", "avg price €", "price €", "total €", "profit €", "price ₿", "total ₿")]
+t_total = t_profit = t_btc = 0
 for row in all_coins:
     rowl = list(row)
     # GET PRICES
@@ -63,7 +64,10 @@ for row in all_coins:
     rowl.append(total-row[1])
     t_profit = t_profit + total - row[1]
     rowl.append(round(price[row[0]]['btc'], 8))
+    total_btc = price[row[0]]['btc']*row[4]
+    t_btc = t_btc + total_btc
+    rowl.append(total_btc)
     tablaa.append(rowl)
-tablaa.append(("", float(t_invest),100,"","",0,0,t_total,t_profit,""))
+tablaa.append(("", float(t_invest),100,"","",0,0,t_total,t_profit,"",t_btc))
 print(tabulate(tablaa, headers=("firstrow"), floatfmt="0.2f"))
 

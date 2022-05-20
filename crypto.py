@@ -1,6 +1,5 @@
 import urllib.request, json, sqlite3
 from tabulate import tabulate
-import mydatabase
  
 # connect and/or create database;
 create_table = """ create table if not exists crypto (
@@ -57,7 +56,7 @@ for row in all_coins:
     
     t_invest = round(rowl[2], 2)
     rowl.pop(2)
-    rowl.append(price[row[0]]['eur'])
+    rowl.append(round(price[row[0]]['eur'],2))
     total = price[row[0]]['eur']*row[4]
     rowl.append(total)
     t_total = t_total + total
@@ -68,6 +67,6 @@ for row in all_coins:
     t_btc = t_btc + total_btc
     rowl.append(total_btc)
     tablaa.append(rowl)
-tablaa.append(("", float(t_invest),100,"","",0,0,t_total,t_profit,"",t_btc))
+tablaa.append(("", float(t_invest),"","","","","",t_total,t_profit,"",t_btc))
 print(tabulate(tablaa, headers=("firstrow"), floatfmt="0.2f"))
 

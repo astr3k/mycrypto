@@ -4,7 +4,9 @@ A terminal program to keep track of your crypto in one shot. Helps to check of t
 It works with [SQLite](https://sqlite.org), currently you should be able to insert, delete and modify data on a very simple table.
 
 The output is a very simple table:
-           invest  %      amount              code    avg price €    price €      total €    profit €  price ₿       total ₿
--------  --------  -----  ------------------  ------  -------------  ---------  ---------  ----------  ----------  ---------
+
+
+    | invest |  % | amount | code | avg price € | price € | total € | profit € | price ₿ | total ₿
+--- | ------ | -- | ------ | ---- | ----------- | ------- | ------- | -------- | ------- | -------   
 
 

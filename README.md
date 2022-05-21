@@ -5,8 +5,7 @@ It works with [SQLite](https://sqlite.org), currently you should be able to inse
 
 The output is a very simple table:
 
-
-    | invest |  % | amount | code | avg price € | price € | total € | profit € | price ₿ | total ₿
---- | ------ | -- | ------ | ---- | ----------- | ------- | ------- | -------- | ------- | -------   
+invest |  % | amount | code | avg price € | price € | total € | profit € | price ₿ | total ₿
+------ | -- | ------ | ---- | ----------- | ------- | ------- | -------- | ------- | -------   
 
 

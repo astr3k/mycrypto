@@ -17,7 +17,7 @@ CREATE TABLE crypto (
 ```
 The output is a very simple table:
 
-invest |  % | amount | code | avg price € | price € | total € | profit € | profit % | price ₿ | total ₿
------- | -- | ------ | ---- | ----------- | ------- | ------- | -------- | -------- | ------- | -------   
+invest |  % | amount | code | avg price € | price € | total € | profit € | profit % | price ₿ | total ₿ | price €/₿
+------ | -- | ------ | ---- | ----------- | ------- | ------- | -------- | -------- | ------- | ------- | --------- 
 
 

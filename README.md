@@ -15,7 +15,7 @@ CREATE TABLE crypto (
             'remarks' varchar(150) not null
         );
 ```
-The output is a very simple table:
+Depends on [tabulate](https://pypi.org/project/tabulate/) to create a very simple table:
 
 invest |  % | amount | code | avg price € | price € | total € | profit € | profit % | price ₿ | total ₿ | price €/₿
 ------ | -- | ------ | ---- | ----------- | ------- | ------- | -------- | -------- | ------- | ------- | --------- 

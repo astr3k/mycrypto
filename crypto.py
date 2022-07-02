@@ -40,7 +40,7 @@ finally:
 
 
 # PRINT TABLE
-tablaa = [("invest", "%", "amount", "code", "avg price €", "price €", "total €", "profit €", "profit %", "price ₿", "total ₿")]
+tablaa = [("invest", "%", "amount", "code", "avg price €", "price €", "total €", "profit €", "profit %", "price ₿", "total ₿", "price €/₿")]
 t_total = t_profit = t_btc = 0
 for row in all_coins:
     rowl = list(row)
@@ -56,7 +56,7 @@ for row in all_coins:
     
     t_invest = round(rowl[2], 2)
     rowl.pop(2)
-    price_eur = round(price[row[0]]['eur'],2)
+    price_eur = round(price[row[0]]['eur'], 2)
     total = price[row[0]]['eur']*row[4]
     t_total = t_total + total
     profit = total - row[1] 
@@ -65,9 +65,10 @@ for row in all_coins:
     price_btc = round(price[row[0]]['btc'], 8)
     total_btc = price_btc * row[4]
     t_btc = t_btc + total_btc
+    price_eur_btc = round(row[1] / total_btc, 2)
     
-    rowl.extend([ price_eur, total, profit, profit_per, price_btc, total_btc ])    
+    rowl.extend([ price_eur, total, profit, profit_per, price_btc, total_btc, price_eur_btc ])    
     tablaa.append(rowl)
-tablaa.append(("", float(t_invest),"","","","","",t_total,t_profit,t_profit * 100 / t_invest,"",t_btc))
+tablaa.append(("", float(t_invest), "", "", "", "", "", t_total, t_profit,t_profit * 100 / t_invest, "", t_btc, t_invest / t_btc))
 print(tabulate(tablaa, headers=("firstrow"), floatfmt="0.2f"))
 

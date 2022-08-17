@@ -61,7 +61,7 @@ for row in all_coins:
     t_total = t_total + total
     profit = total - row[1] 
     t_profit = t_profit + total - row[1]
-    profit_per = profit * 100 / row[1]
+    profit_per = profit * 100.0 / row[1]
     price_btc = round(price[row[0]]['btc'], 8)
     total_btc = price_btc * row[4]
     t_btc = t_btc + total_btc
@@ -69,6 +69,6 @@ for row in all_coins:
     
     rowl.extend([ price_eur, total, profit, profit_per, price_btc, total_btc, price_eur_btc ])    
     tablaa.append(rowl)
-tablaa.append(("", float(t_invest), "", "", "", "", "", t_total, t_profit,t_profit * 100 / t_invest, "", t_btc, t_invest / t_btc))
+tablaa.append(("", float(t_invest), "", "", "", t_invest/t_btc, "", t_total, t_profit,t_profit * 100 / t_invest, "", t_btc, t_invest / t_btc))
 print(tabulate(tablaa, headers=("firstrow"), floatfmt="0.2f"))
 

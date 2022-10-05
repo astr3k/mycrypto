@@ -1,4 +1,5 @@
 import urllib.request, json, sqlite3
+from urllib.request import Request, urlopen
 from tabulate import tabulate
  
 # connect and/or create database;
@@ -45,14 +46,16 @@ t_total = t_profit = t_btc = 0
 for row in all_coins:
     rowl = list(row)
     # GET PRICES
-    
-    url = "https://api.coingecko.com/api/v3/simple/price?ids="+rowl[0]+"&vs_currencies=eur%2Cbtc"
+    url = "https://api.coingecko.com/api/v3/simple/price?ids="+rowl[0]+"&vs_currencies=eur,btc"
+    request_url = Request(url, headers={"User-Agent": "Mozilla/5.0"})
+ 
     try:
-        with urllib.request.urlopen(url) as u:
+        with urllib.request.urlopen(request_url) as u:
             price = json.loads(u.read().decode())
 
     except urllib.Error as error:
         print('Error occured - ', error)
+    
     
     t_invest = round(rowl[2], 2)
     rowl.pop(2)
@@ -69,6 +72,6 @@ for row in all_coins:
     
     rowl.extend([ price_eur, total, profit, profit_per, price_btc, total_btc, price_eur_btc ])    
     tablaa.append(rowl)
-tablaa.append(("", float(t_invest), "", "", "", t_invest/t_btc, "", t_total, t_profit,t_profit * 100 / t_invest, "", t_btc, t_invest / t_btc))
+tablaa.append(("", float(t_invest), "", "", "", "", "", t_total, t_profit,t_profit * 100 / t_invest, "", t_btc, t_invest / t_btc))
 print(tabulate(tablaa, headers=("firstrow"), floatfmt="0.2f"))
 

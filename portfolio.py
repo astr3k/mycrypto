@@ -3,7 +3,7 @@ from urllib.request import Request, urlopen
 from tabulate import tabulate
  
 # connect and/or create database;
-create_table = """ create table if not exists crypto (
+create_table = """ create table if not exists portfolio (
             'date' datetime not null primary key default current_timestamp,
             'cents' integeer not null,
             'amount' real not null,
@@ -13,7 +13,7 @@ create_table = """ create table if not exists crypto (
         ); """
 
 try:
-    conn = sqlite3.connect('crypto.db')
+    conn = sqlite3.connect('portfolio.db')
     cursor = conn.cursor()
     cursor.execute(create_table)
 
@@ -25,9 +25,9 @@ finally:
         conn.close()
 
 try:
-    conn = sqlite3.connect('crypto.db')
+    conn = sqlite3.connect('portfolio.db')
     cursor = conn.cursor()
-    cursor.execute("select coin, sum(cents)/100.00 as euro, sum(sum(cents)) over()/100.0 as total_eur, round(100.0*sum(cents) / sum(sum(cents)) over(), 2) as per, sum(amount), code, round(sum(cents)/sum(amount)/100, 2) as price FROM crypto group by code order by sum(cents) desc;")
+    cursor.execute("select coin, sum(cents)/100.00 as euro, sum(sum(cents)) over()/100.0 as total_eur, round(100.0*sum(cents) / sum(sum(cents)) over(), 2) as per, sum(amount), code, round(sum(cents)/sum(amount)/100, 2) as price FROM portfolio group by code order by sum(cents) desc;")
     all_coins = cursor.fetchall()
     cursor.close()
 

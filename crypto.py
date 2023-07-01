@@ -17,7 +17,7 @@ try:
     cursor = conn.cursor()
     cursor.execute(create_table)
 
-except sqlite3.Error as error:
+except sqlite3.error as error:
     print('Error occured - ', error)
 
 finally:
@@ -32,7 +32,7 @@ try:
     cursor.close()
 
 
-except sqlite3.Error as error:
+except sqlite3.error as error:
     print('Error occured - ', error)
 
 finally:
@@ -53,7 +53,7 @@ for row in all_coins:
         with urllib.request.urlopen(request_url) as u:
             price = json.loads(u.read().decode())
 
-    except urllib.Error as error:
+    except urllib.error as error:
         print('Error occured - ', error)
     
     

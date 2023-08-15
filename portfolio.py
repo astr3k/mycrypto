@@ -41,12 +41,12 @@ finally:
 
 
 # PRINT TABLE
-tablaa = [("invest", "%", "amount", "code", "avg price €", "price €", "total €", "profit €", "profit %", "price USD", "price ₿", "total ₿", "price €/₿")]
+tablaa = [("invest", "%", "amount", "code", "avg price €", "price €", "total €", "profit €", "profit %", "price USD", "price ₿", "total ₿", "price $/₿", "price €/₿")]
 t_total = t_profit = t_btc = 0
 for row in all_coins:
     rowl = list(row)
     # GET PRICES
-    url = "https://api.coingecko.com/api/v3/simple/price?ids="+rowl[0]+"&vs_currencies=btc,eur,usd"
+    url = "https://api.coingecko.com/api/v3/simple/price?ids=usd,"+rowl[0]+"&vs_currencies=btc,eur,usd"
     request_url = Request(url, headers={"User-Agent": "Mozilla/5.0"})
  
     try:
@@ -62,6 +62,7 @@ for row in all_coins:
     price_btc = round(price[row[0]]['btc'], 8)
     price_eur = round(price[row[0]]['eur'], 2)
     price_usd = round(price[row[0]]['usd'], 2)
+    usd_eur = round(price['usd']['eur'], 6)
     total = price[row[0]]['eur']*row[4]
     t_total = t_total + total
     profit = total - row[1] 
@@ -70,9 +71,10 @@ for row in all_coins:
     total_btc = price_btc * row[4]
     t_btc = t_btc + total_btc
     price_eur_btc = round(row[1] / total_btc, 2)
+    price_usd_btc = round(price_eur_btc / usd_eur, 2)
     
-    rowl.extend([ price_eur, total, profit, profit_per, price_usd, price_btc, total_btc, price_eur_btc ])    
+    rowl.extend([ price_eur, total, profit, profit_per, price_usd, price_btc, total_btc, price_usd_btc, price_eur_btc ])    
     tablaa.append(rowl)
-tablaa.append(("", float(t_invest), "", "", "", "", "", t_total, t_profit,t_profit * 100 / t_invest, "", "", t_btc, t_invest / t_btc))
+tablaa.append(("", float(t_invest), "", "", "", "", "", t_total, t_profit,t_profit * 100 / t_invest, "", "", t_btc, (t_invest / t_btc) / usd_eur, t_invest / t_btc))
 print(tabulate(tablaa, headers=("firstrow"), floatfmt="0.2f"))
 

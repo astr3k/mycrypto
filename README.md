@@ -17,7 +17,7 @@ CREATE TABLE crypto (
 ```
 Depends on [tabulate](https://pypi.org/project/tabulate/) to create a very simple table:
 
-invest |  % | amount | code | avg price € | price € | total € | profit € | profit % | price ₿ | total ₿ | price €/₿
------- | -- | ------ | ---- | ----------- | ------- | ------- | -------- | -------- | ------- | ------- | --------- 
+invest |  % | amount | code | avg price € | price € | total € | profit € | profit % | price USB | price ₿ | total ₿ | price $/₿ | price €/₿
+------ | -- | ------ | ---- | ----------- | ------- | ------- | -------- | -------- | --------  | ------- | ------- | --------- | ---------
 
 

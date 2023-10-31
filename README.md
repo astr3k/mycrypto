@@ -1,4 +1,4 @@
-# mycrypto
+# portfolio
 
 A terminal program to keep track of your crypto in one shot. Helps to check of the percentage invested and the return.
 It works with [SQLite](https://sqlite.org).
@@ -15,6 +15,8 @@ CREATE TABLE crypto (
             'remarks' varchar(150) not null
         );
 ```
+It needs a [TOR](https://www.torproject.org) service running to get the prices.
+
 Depends on [requests](https://pypi.org/project/requests/) and [tabulate](https://pypi.org/project/tabulate/) to create a very simple table:
 
 invest |  % | amount | code | avg price € | price € | total € | profit € | profit % | price USB | price ₿ | total ₿ | price $/₿ | price €/₿

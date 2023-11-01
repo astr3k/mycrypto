@@ -1,11 +1,40 @@
-# pip install requests[socks] stem tabulate
-# python3 -m pip install --upgrade pip
-# https://stackoverflow.com/questions/30286293/make-requests-using-python-over-tor
-
-import json, sqlite3, requests
+import json
+import sqlite3
+import requests
 from tabulate import tabulate
 
-##TOR
+# Define a function to create or connect to the database
+def create_or_connect_db(db_name):
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+    create_table = """CREATE TABLE IF NOT EXISTS portfolio (
+        'date' datetime not null primary key default current_timestamp,
+        'cents' integer not null,
+        'amount' real not null,
+        'code' char(3) not null,
+        'coin' varchar(15) not null,
+        'remarks' varchar(150) not null
+    );"""
+    cursor.execute(create_table)
+    conn.commit()
+    return conn, cursor
+
+# Define a function to fetch portfolio data from the database
+def fetch_portfolio_data(cursor):
+    cursor.execute("""
+        SELECT
+            coin,
+            sum(cents)/100.00 as euro,
+            sum(sum(cents)) over()/100.0 as total_eur,
+            round(100.0*sum(cents) / sum(sum(cents)) over(), 2) as per,
+            sum(amount),
+            code,
+            round(sum(cents)/sum(amount)/100, 2) as price
+        FROM portfolio GROUP BY code ORDER BY sum(cents) desc;
+    """)
+    return cursor.fetchall()
+
+# TOR
 def get_tor_session():
     session = requests.session()
     # Tor uses the 9050 port as the default socks port
@@ -13,94 +42,54 @@ def get_tor_session():
                        'https': 'socks5://127.0.0.1:9050'}
     return session
 
-session = get_tor_session()
+# Define a function to fetch coin prices
+def fetch_coin_prices(session, coin_codes):
+    url = f"https://api.coingecko.com/api/v3/simple/price?ids=usd,{','.join(coin_codes)}&vs_currencies=btc,eur,usd"
+    response = session.get(url)
+    return json.loads(response.text)
 
-#from stem import Signal
-#from stem.control import Controller
+def main():
+    conn, cursor = create_or_connect_db('portfolio.db')
+    all_coins = fetch_portfolio_data(cursor)
+    conn.close()
 
-#with Controller.from_port(port = 9051) as controller:
-#    controller.authenticate(password='your password set for tor controller port in torrc')
-#    print("Success!")
-#    controller.signal(Signal.NEWNYM)
-#    print("New Tor connection processed")
+    session = get_tor_session()
+    coin_codes = [row[0] for row in all_coins]
 
+    # Fetch coin prices
+    prices = fetch_coin_prices(session, coin_codes)
 
-# connect and/or create database;
-create_table = """ CREATE TABLE IF NOT EXISTS portfolio (
-            'date' datetime not null primary key default current_timestamp,
-            'cents' integeer not null,
-            'amount' real not null,
-            'code' char(3) not null,
-            'coin' varchar(15) not null,
-            'remarks' varchar(150) not null
-        ); """
+    # Prepare and print the table
+    tablaa = [("invest", "%", "amount", "code", "avg price €", "price €", "total €", "profit €", "profit %", "price USD", "price ₿", "total ₿", "price $/₿", "price €/₿")]
+    t_total = t_profit = t_btc = 0
 
-try:
-    conn = sqlite3.connect('portfolio.db')
-    cursor = conn.cursor()
-    cursor.execute(create_table)
+    for row in all_coins:
+        coin_code = row[0]
+        t_invest = round(row[2], 2)
+        coin_prices = prices[coin_code]
 
-except sqlite3.error as error:
-    print('Error occured - ', error)
+        price_btc = round(coin_prices['btc'], 8)
+        price_eur = round(coin_prices['eur'], 2)
+        price_usd = round(coin_prices['usd'], 2)
 
-finally:
-    if conn:
-        conn.close()
+        usd_eur = round(prices['usd']['eur'], 6)
+        total = price_eur * row[4]
+        t_total += total
+        profit = total - row[1]
+        t_profit += profit
+        profit_per = profit * 100.0 / row[1]
+        total_btc = price_btc * row[4]
+        t_btc += total_btc
+        price_eur_btc = round(row[1] / total_btc, 2)
+        price_usd_btc = round(price_eur_btc / usd_eur, 2)
 
-try:
-    conn = sqlite3.connect('portfolio.db')
-    cursor = conn.cursor()
-    cursor.execute(""" SELECT
-                        coin,
-                        sum(cents)/100.00 as euro,
-                        sum(sum(cents)) over()/100.0 as total_eur,
-                        round(100.0*sum(cents) / sum(sum(cents)) over(), 2) as per,
-                        sum(amount),
-                        code,
-                        round(sum(cents)/sum(amount)/100, 2) as price
-                    FROM portfolio GROUP BY code ORDER BY sum(cents) desc; """)
-    all_coins = cursor.fetchall()
-    cursor.close()
+        row = list(row)
+        row.pop(2)
+        row.extend([price_eur, total, profit, profit_per, price_usd, price_btc, total_btc, price_usd_btc, price_eur_btc])
+        tablaa.append(row)
 
+    tablaa.append(("", float(t_invest), "", "", "", "", "", t_total, t_profit, t_profit * 100 / t_invest, "", "", t_btc, (t_invest / t_btc) / usd_eur, t_invest / t_btc))
+    print(tabulate(tablaa, headers=("firstrow"), floatfmt="0.2f"))
 
-except sqlite3.error as error:
-    print('Error occured - ', error)
-
-finally:
-    if conn:
-        conn.close()
-
-
-# PRINT TABLE
-tablaa = [("invest", "%", "amount", "code", "avg price €", "price €", "total €", "profit €", "profit %", "price USD", "price ₿", "total ₿", "price $/₿", "price €/₿")]
-t_total = t_profit = t_btc = 0
-for row in all_coins:
-    rowl = list(row)
-    
-    # GET PRICES
-    
-    url = "https://api.coingecko.com/api/v3/simple/price?ids=usd,"+rowl[0]+"&vs_currencies=btc,eur,usd"
-    p = session.get(url).text
-    price = json.loads(p)
-
-    t_invest = round(rowl[2], 2)
-    rowl.pop(2)
-    price_btc = round(price[row[0]]['btc'], 8)
-    price_eur = round(price[row[0]]['eur'], 2)
-    price_usd = round(price[row[0]]['usd'], 2)
-    usd_eur = round(price['usd']['eur'], 6)
-    total = price[row[0]]['eur']*row[4]
-    t_total = t_total + total
-    profit = total - row[1] 
-    t_profit = t_profit + total - row[1]
-    profit_per = profit * 100.0 / row[1]
-    total_btc = price_btc * row[4]
-    t_btc = t_btc + total_btc
-    price_eur_btc = round(row[1] / total_btc, 2)
-    price_usd_btc = round(price_eur_btc / usd_eur, 2)
-    
-    rowl.extend([ price_eur, total, profit, profit_per, price_usd, price_btc, total_btc, price_usd_btc, price_eur_btc ])    
-    tablaa.append(rowl)
-tablaa.append(("", float(t_invest), "", "", "", "", "", t_total, t_profit,t_profit * 100 / t_invest, "", "", t_btc, (t_invest / t_btc) / usd_eur, t_invest / t_btc))
-print(tabulate(tablaa, headers=("firstrow"), floatfmt="0.2f"))
-
+if __name__ == "__main__":
+    main()

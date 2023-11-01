@@ -1,7 +1,6 @@
 import json
-import sqlite3
 import requests
-from tabulate import tabulate
+import sqlite3
 
 # Define a function to create or connect to the database
 def create_or_connect_db(db_name):
@@ -59,8 +58,10 @@ def main():
     # Fetch coin prices
     prices = fetch_coin_prices(session, coin_codes)
 
-    # Prepare and print the table
-    tablaa = [("invest", "%", "amount", "code", "avg price €", "price €", "total €", "profit €", "profit %", "price USD", "price ₿", "total ₿", "price $/₿", "price €/₿")]
+    # Print the table headers
+    print("{:<12} {:<12} {:<7} {:<15} {:<6} {:<12} {:<12} {:<12} {:<12} {:<7} {:<12} {:<12} {:<12} {:<12} {:<12}".format(
+    "", "invest", "%", "amount", "code", "avg Price €", "price €", "total €", "profit €", "profit %", "price USD", "price ₿", "total ₿", "price $/₿", "price €/₿"))
+    
     t_total = t_profit = t_btc = 0
 
     for row in all_coins:
@@ -86,10 +87,12 @@ def main():
         row = list(row)
         row.pop(2)
         row.extend([price_eur, total, profit, profit_per, price_usd, price_btc, total_btc, price_usd_btc, price_eur_btc])
-        tablaa.append(row)
-
-    tablaa.append(("", float(t_invest), "", "", "", "", "", t_total, t_profit, t_profit * 100 / t_invest, "", "", t_btc, (t_invest / t_btc) / usd_eur, t_invest / t_btc))
-    print(tabulate(tablaa, headers=("firstrow"), floatfmt="0.2f"))
+    
+        print("{:<12} {:<12} {:<7.2f} {:<15} {:<6} {:<12.2f} {:<12.2f} {:<12.2f} {:<12.2f} {:<7.2f} {:<12.2f} {:<12.8f} {:<12.8f} {:<12.2f} {:<12.2f}".format(
+            row[0], row[1], row[2], row[3], row[4], row[5], row[6], total, profit, profit_per, price_usd, price_btc, total_btc, price_usd_btc, price_eur_btc))
+    
+    print("{:<12} {:<12} {:<7} {:<15} {:<6} {:<12} {:<12} {:<12} {:<12} {:<7} {:<12} {:<12} {:<12} {:<12} {:<12}".format(
+        "", t_invest, "", "", "", "", "", round(t_total, 2), round(t_profit, 2), round(t_profit * 100 / t_invest, 2), "", "", round(t_btc, 8), round((t_invest / t_btc) / usd_eur, 2), round(t_invest / t_btc, 2)))
 
 if __name__ == "__main__":
     main()

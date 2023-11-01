@@ -17,9 +17,4 @@ CREATE TABLE crypto (
 ```
 It needs a [TOR](https://www.torproject.org) service running to get the prices.
 
-Depends on [requests](https://pypi.org/project/requests/) and [tabulate](https://pypi.org/project/tabulate/) to create a very simple table:
-
-invest |  % | amount | code | avg price € | price € | total € | profit € | profit % | price USB | price ₿ | total ₿ | price $/₿ | price €/₿
------- | -- | ------ | ---- | ----------- | ------- | ------- | -------- | -------- | --------  | ------- | ------- | --------- | ---------
-
-
+Depends on [requests](https://pypi.org/project/requests/)

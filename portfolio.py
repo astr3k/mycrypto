@@ -59,8 +59,10 @@ def main():
     prices = fetch_coin_prices(session, coin_codes)
 
     # Print the table headers
-    print("{:<12} {:<12} {:<7} {:<15} {:<6} {:<12} {:<12} {:<12} {:<12} {:<7} {:<12} {:<12} {:<12} {:<12} {:<12}".format(
-    "", "invest", "%", "amount", "code", "avg Price €", "price €", "total €", "profit €", "profit %", "price USD", "price ₿", "total ₿", "price $/₿", "price €/₿"))
+    print("{:<9}  {:<16}  {:<21}  {:<8}  {:<56}  {:<22}  {:<21}".format(
+    "", "invest  €      %", "amount", "entry  €", "price   €          $            ₿         €/₿         $/₿", "total    €            ₿", "profit   €        %"))
+    print("{:<9}  {:<16}  {:<21}  {:<8}  {:<56}  {:<22}  {:<21}".format(
+    "--------", "----------------", "---------------------", "--------", "---------------------------------------------------------", "-----------------------", "-------------------"))
     
     t_total = t_profit = t_btc = 0
 
@@ -88,11 +90,11 @@ def main():
         row.pop(2)
         row.extend([price_eur, total, profit, profit_per, price_usd, price_btc, total_btc, price_usd_btc, price_eur_btc])
     
-        print("{:<12} {:<12} {:<7.2f} {:<15} {:<6} {:<12.2f} {:<12.2f} {:<12.2f} {:<12.2f} {:<7.2f} {:<12.2f} {:<12.8f} {:<12.8f} {:<12.2f} {:<12.2f}".format(
-            row[0], row[1], row[2], row[3], row[4], row[5], row[6], total, profit, profit_per, price_usd, price_btc, total_btc, price_usd_btc, price_eur_btc))
+        print("{:<9}  {:>9.2f}  {:>5.2f}  {:<16}  {:>3}  {:>8.2f}  {:>9.2f}  {:>9.2f}  {:>11.8f}  {:>10.2f}  {:>10.2f}  {:>10.2f}  {:>11.8f}  {:>10.2f}  {:>7.2f}".format(
+            row[0], row[1], row[2], row[3], row[4], row[5], row[6], price_usd, price_btc, price_eur_btc, price_usd_btc, total, total_btc, profit, profit_per))
     
-    print("{:<12} {:<12} {:<7} {:<15} {:<6} {:<12} {:<12} {:<12} {:<12} {:<7} {:<12} {:<12} {:<12} {:<12} {:<12}".format(
-        "", t_invest, "", "", "", "", "", round(t_total, 2), round(t_profit, 2), round(t_profit * 100 / t_invest, 2), "", "", round(t_btc, 8), round((t_invest / t_btc) / usd_eur, 2), round(t_invest / t_btc, 2)))
+    print("{:<9}  {:>9.2f}  {:>6}  {:<21}  {:<8}  {:<9}  {:<10}  {:<9}  {:>10.2f}  {:>10.2f}  {:>10.2f}  {:>11.8f}  {:>10.2f}  {:>7.2f}".format(
+        "", t_invest, "", "", "", "", "", "", round(t_invest / t_btc, 2), round((t_invest / t_btc) / usd_eur, 2),  round(t_total, 2), round(t_btc, 8), round(t_profit, 2), round(t_profit * 100 / t_invest, 2)))
 
 if __name__ == "__main__":
     main()

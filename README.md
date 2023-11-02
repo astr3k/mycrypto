@@ -1,7 +1,7 @@
 # portfolio
 
 A terminal program to keep track of your crypto in one shot. Helps to check of the percentage invested and the return.
-It works with [SQLite](https://sqlite.org).
+It works with [SQLite](https://sqlite.org) and [requests](https://pypi.org/project/requests/).
 The user should be able to insert, edit and delete data on a table that is created if not exists when running the program:
 
 ```
@@ -16,5 +16,3 @@ CREATE TABLE crypto (
         );
 ```
 It needs a [TOR](https://www.torproject.org) service running to get the prices.
-
-Depends on [requests](https://pypi.org/project/requests/)

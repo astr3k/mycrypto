@@ -1,6 +1,25 @@
 import json
-import requests
 import sqlite3
+import subprocess
+
+# Package name you want to install
+package_name = "requests"
+
+# Check if the package is already installed
+try:
+    import importlib
+    importlib.import_module(package_name)
+    #print(f"{package_name} is already installed.")
+except ImportError:
+    # Use subprocess to run the pip install command
+    try:
+        subprocess.check_call(["pip", "install", package_name])
+        print(f"Successfully installed {package_name}.")
+    except subprocess.CalledProcessError as e:
+        print(f"An error occurred while installing {package_name}: {e}")
+
+import requests
+
 
 # Define a function to create or connect to the database
 def create_or_connect_db(db_name):

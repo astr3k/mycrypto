@@ -1,22 +1,22 @@
 import json
 import sqlite3
-import subprocess
 
-# Package name you want to install
-package_name = "requests"
-
-# Check if the package is already installed
-try:
-    import importlib
-    importlib.import_module(package_name)
-    #print(f"{package_name} is already installed.")
-except ImportError:
-    # Use subprocess to run the pip install command
-    try:
-        subprocess.check_call(["pip", "install", package_name])
-        print(f"Successfully installed {package_name}.")
-    except subprocess.CalledProcessError as e:
-        print(f"An error occurred while installing {package_name}: {e}")
+## Package name to install, commented for speed
+#package_name = "requests"
+#import subprocess
+#
+## Check if the package is already installed
+#try:
+#    import importlib
+#    importlib.import_module(package_name)
+#    #print(f"{package_name} is already installed.")
+#except ImportError:
+#    # Use subprocess to run the pip install command
+#    try:
+#        subprocess.check_call(["pip", "install", package_name])
+#        print(f"Successfully installed {package_name}.")
+#    except subprocess.CalledProcessError as e:
+#        print(f"An error occurred while installing {package_name}: {e}")
 
 import requests
 
@@ -48,7 +48,10 @@ def fetch_portfolio_data(cursor):
             sum(amount),
             code,
             round(sum(cents)/sum(amount)/100, 2) as price
-        FROM portfolio GROUP BY code ORDER BY sum(cents) desc;
+        FROM portfolio 
+        GROUP BY code 
+        HAVING euro > 0
+        ORDER BY sum(cents) desc;
     """)
     return cursor.fetchall()
 
@@ -78,10 +81,10 @@ def main():
     prices = fetch_coin_prices(session, coin_codes)
 
     # Print the table headers
-    print("{:<7}  {:<15}  {:<20}  {:<8}  {:<52}  {:<21}  {:<19}".format(
-    "", "invest €      %", "amount", "entry  €", "price  €         $           ₿        €/₿        $/₿", "total    €          ₿", "profit  €       %"))
-    print("{:<7}  {:<15}  {:<20}  {:<8}  {:<52}  {:<21}  {:<19}".format(
-    "-------", "---------------", "--------------------", "--------", "----------------------------------------------------", "---------------------", "-----------------"))
+    print("{:<7}  {:<15}  {:<20}  {:<8}  {:<30}  {:<21}  {:<19}".format(
+    "", "invest €      %", "amount", "entry  €", "price  €         $           ₿", "total    €          ₿", "profit  €       %"))
+    print("{:<7}  {:<15}  {:<20}  {:<8}  {:<30}  {:<21}  {:<19}".format(
+    "-------", "---------------", "--------------------", "--------", "------------------------------", "---------------------", "-----------------"))
     
     t_total = t_profit = t_btc = 0
 
@@ -104,19 +107,28 @@ def main():
         t_btc += total_btc
         price_eur_btc = round(row[1] / total_btc, 2)
         price_usd_btc = round(price_eur_btc / usd_eur, 2)
-
+        
         row = list(row)
         row.pop(2)
         row.extend([price_eur, total, profit, profit_per, price_usd, price_btc, total_btc, price_usd_btc, price_eur_btc])
-    
-        print("{:<7}  {:>8.2f}  {:>5.2f}  {:<15}  {:>3}  {:>8.2f}  {:>8.2f}  {:>8.2f}  {:>10.8f}  {:>9.2f}  {:>9.2f}  {:>9.2f}  {:>10.8f}  {:>9.2f}  {:>6.2f}".format(
-            row[0], row[1], row[2], row[3], row[4], row[5], row[6], price_usd, price_btc, price_eur_btc, price_usd_btc, total, total_btc, profit, profit_per))
-    
+        
+        if row[0] == "stasis-eurs":
+            row[0] = "euro"
+
+
+
+        print("{:<7}  {:>8.2f}  {:>5.2f}  {:<15}  {:>3}  {:>8.2f}  {:>8.2f}  {:>8.2f}  {:>10.8f}  {:>9.2f}  {:>10.8f}  {:>9.2f}  {:>6.2f}".format(
+            row[0], row[1], row[2], row[3], row[4], row[5], row[6], price_usd, price_btc, total, total_btc, profit, profit_per))
+        
+    #cash
+    #print("{:<7}  {:>8.2f}  {:>5.2f}  {:<15}  {:>3}  {:>8.2f}  {:>8.2f}  {:>8.2f}  {:>10.8f}  {:>9.2f}  {:>10.8f}  {:>9.2f}  {:>6.2f}".format(
+    #    "euro", 15000.00, 10.2, 15000.00, "EUR", 1.00, 1, 0, 0, 15000.00, 0, 0, 0))
+
     # Print the table footer (TOTALS)
-    print("{:<7}  {:<15}  {:<20}  {:<8}  {:<52}  {:<21}  {:<19}".format(
-    "-------", "---------------", "--------------------", "--------", "----------------------------------------------------", "---------------------", "-----------------"))
-    print("{:<7}  {:>8.2f}  {:>5}  {:<20}  {:<8}  {:<8}  {:<8}  {:<10}  {:>9.2f}  {:>9.2f}  {:>9.2f}  {:>10.8f}  {:>9.2f}  {:>6.2f}".format(
-        "", t_invest, "", "", "", "", "", "", round(t_invest / t_btc, 2), round((t_invest / t_btc) / usd_eur, 2),  round(t_total, 2), round(t_btc, 8), round(t_profit, 2), round(t_profit * 100 / t_invest, 2)))
+    print("{:<7}  {:<15}  {:<20}  {:<8}  {:<30}  {:<21}  {:<19}".format(
+    "-------", "---------------", "--------------------", "--------", "------------------------------", "---------------------", "-----------------"))
+    print("{:<7}  {:>8.2f}  {:>5}  {:<20}  {:<8}  {:<8}  {:<8}  {:<10}  {:>9.2f}  {:>10.8f}  {:>9.2f}  {:>6.2f}".format(
+        "", t_invest, "", "", "", "", "", "", round(t_total, 2), round(t_btc, 8), round(t_profit, 2), round(t_profit * 100 / t_invest, 2)))
 
 if __name__ == "__main__":
     main()

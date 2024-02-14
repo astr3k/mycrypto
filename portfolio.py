@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+
+import os
 import json
 import sqlite3
 
@@ -20,6 +23,7 @@ import sqlite3
 
 import requests
 
+db_file = os.path.expanduser('~/Documents/portfolio.db')
 
 # Define a function to create or connect to the database
 def create_or_connect_db(db_name):
@@ -70,7 +74,7 @@ def fetch_coin_prices(session, coin_codes):
     return json.loads(response.text)
 
 def main():
-    conn, cursor = create_or_connect_db('portfolio.db')
+    conn, cursor = create_or_connect_db(db_file)
     all_coins = fetch_portfolio_data(cursor)
     conn.close()
 

@@ -1,29 +1,15 @@
 #!/usr/bin/env python3
+# 
+# depends on requests 
+# "pip install requests"
+# moving into pair BTCXMR 125lines
 
 import os
 import json
 import sqlite3
-
-## Package name to install, commented for speed
-#package_name = "requests"
-#import subprocess
-#
-## Check if the package is already installed
-#try:
-#    import importlib
-#    importlib.import_module(package_name)
-#    #print(f"{package_name} is already installed.")
-#except ImportError:
-#    # Use subprocess to run the pip install command
-#    try:
-#        subprocess.check_call(["pip", "install", package_name])
-#        print(f"Successfully installed {package_name}.")
-#    except subprocess.CalledProcessError as e:
-#        print(f"An error occurred while installing {package_name}: {e}")
-
 import requests
 
-db_file = os.path.expanduser('~/Documents/portfolio.db')
+db_file = os.path.expanduser('~/.portfolio.db')
 
 # Define a function to create or connect to the database
 def create_or_connect_db(db_name):

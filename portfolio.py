@@ -74,7 +74,7 @@ def main():
 
     # Print the table headers
     print("{:<20}  {:<14}  {:<8}  {:<30}  {:<21}  {:<19}".format(
-    "balance", "invest €     %", "entry  €    !x → €", "price  €         $            !x", "total   €           ₿", "profit  €      %"))
+    "balance", "invest €     %", "entry  €    !x → €", "price  €         $            !x", "total   €      !x | ₿", "profit  €      %"))
     print("{:<20}  {:<14}  {:<18}  {:<30}  {:<21}  {:<19}".format(
     "--------------------", "--------------", "------------------", "--------------------------------", "---------------------", "----------------"))
 
@@ -104,10 +104,11 @@ def main():
         if row[0] == "bitcoin":
             my_price_oposite = row[5]*prices['monero']['btc']
             price_oposite = round(1/prices['monero']['btc'], 8)
+        
+        total_oposite = round(row[3]*price_oposite, 6)
 
-
-        print("{:<15}  {:>3}  {:>8.2f}  {:>4.1f}  {:>8.2f}  {:>8.2f}  {:>8.2f}  {:>8.2f}  {:>12.8f}  {:>9.2f}  {:>10.8f}  {:>9.2f}  {:>5.1f}".format(
-            row[3], row[4], row[1], row[2], row[5], my_price_oposite, row[6], price_usd, price_oposite, total, total_btc, profit, profit_per))
+        print("{:<15}  {:>3}  {:>8.2f}  {:>4.1f}  {:>8.2f}  {:>8.2f}  {:>8.2f}  {:>8.2f}  {:>12.8f}  {:>9.2f}  {:>10.6f}  {:>9.2f}  {:>5.1f}".format(
+            row[3], row[4], row[1], row[2], row[5], my_price_oposite, row[6], price_usd, price_oposite, total, total_oposite, profit, profit_per))
         
 
     # Print the table footer (TOTALS)

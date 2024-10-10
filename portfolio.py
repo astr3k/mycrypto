@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # 
 # depends on requests 
-# "pip install requests"
 
 import os
 import json
@@ -20,7 +19,6 @@ def create_or_connect_db(db_name):
         'cents' integer not null,
         'amount' real not null,
         'code' char(3) not null,
-        'coin' varchar(15) not null,
         'remarks' varchar(150) not null
     );"""
     cursor.execute(create_table)
@@ -31,12 +29,11 @@ def create_or_connect_db(db_name):
 def fetch_portfolio_data(cursor):
     cursor.execute("""
         SELECT
-            coin,
+            code,
             sum(cents)/100.00 as euro,
             sum(sum(cents)) over()/100.0 as total_eur,
             round(100.0*sum(cents) / sum(sum(cents)) over(), 2) as per,
             sum(amount),
-            code,
             round(sum(cents)/sum(amount)/100, 2) as price
         FROM portfolio 
         GROUP BY code 
@@ -65,8 +62,12 @@ def main():
     conn.close()
 
     session = get_tor_session()
-    coin_codes = [row[0] for row in all_coins]
     
+    # For taking out the "coin" field on the database
+    coin_names = {"BTC":"bitcoin", "XMR":"monero"}
+    coin_codes = [coin_names[row[0]] for row in all_coins]
+    
+
     t_total = t_profit = t_btc = 0
 
     # Fetch coin prices
@@ -79,7 +80,7 @@ def main():
     "--------------------", "--------------", "------------------", "--------------------------------", "---------------------", "----------------"))
 
     for row in all_coins:
-        coin_code = row[0]
+        coin_code = coin_names[row[0]]
         t_invest = round(row[2], 2)
         coin_prices = prices[coin_code]
 
@@ -99,16 +100,16 @@ def main():
         row.pop(2)
         row.extend([price_eur, total, profit, profit_per, price_usd, price_btc, total_btc])
                 
-        my_price_oposite = row[5]/price_btc 
+        my_price_oposite = row[4]/price_btc 
         price_oposite = price_btc
-        if row[0] == "bitcoin":
-            my_price_oposite = row[5]*prices['monero']['btc']
+        if coin_names[row[0]] == "bitcoin":
+            my_price_oposite = row[4]*prices['monero']['btc']
             price_oposite = round(1/prices['monero']['btc'], 8)
         
         total_oposite = round(row[3]*price_oposite, 6)
 
         print("{:<15}  {:>3}  {:>8.2f}  {:>4.1f}  {:>8.2f}  {:>8.2f}  {:>8.2f}  {:>8.2f}  {:>12.8f}  {:>9.2f}  {:>10.6f}  {:>9.2f}  {:>5.1f}".format(
-            row[3], row[4], row[1], row[2], row[5], my_price_oposite, row[6], price_usd, price_oposite, total, total_oposite, profit, profit_per))
+            row[3], row[0], row[1], row[2], row[4], my_price_oposite, row[5], price_usd, price_oposite, total, total_oposite, profit, profit_per))
         
 
     # Print the table footer (TOTALS)

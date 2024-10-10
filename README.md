@@ -11,7 +11,6 @@ CREATE TABLE crypto (
             'cents' integeer not null,
             'amount' real not null,
             'code' char(3) not null,
-            'coin' varchar(15) not null,
             'remarks' varchar(150) not null
         );
 ```

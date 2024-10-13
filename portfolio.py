@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 # 
-# depends on requests 
 
-import os
 import json
+import os
 import sqlite3
-
 import requests
 
-db_file = os.path.expanduser('~/.portfolio.db')
+#db_file = os.path.expanduser('~/.portfolio.db')
+db_file = os.path.expanduser('.portfolio.db')
 
-# Define a function to create or connect to the database
 def create_or_connect_db(db_name):
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
@@ -25,7 +23,6 @@ def create_or_connect_db(db_name):
     conn.commit()
     return conn, cursor
 
-# Define a function to fetch portfolio data from the database
 def fetch_portfolio_data(cursor):
     cursor.execute("""
         SELECT
@@ -37,12 +34,11 @@ def fetch_portfolio_data(cursor):
             round(sum(cents)/sum(amount)/100, 2) as price
         FROM portfolio 
         GROUP BY code 
-        HAVING euro > 0
-        ORDER BY sum(cents) desc;
+        HAVING euro > 0;
     """)
-    return cursor.fetchall()
+    rows = cursor.fetchall()
+    return rows
 
-# TOR
 def get_tor_session():
     session = requests.session()
     # Tor uses the 9050 port as the default socks port
@@ -50,73 +46,64 @@ def get_tor_session():
                        'https': 'socks5://127.0.0.1:9050'}
     return session
 
-# Define a function to fetch coin prices
-def fetch_coin_prices(session, coin_codes):
-    url = f"https://api.coingecko.com/api/v3/simple/price?ids={','.join(coin_codes)}&vs_currencies=btc,eur,usd"
+def fetch_coin_prices(session):
+    url = f"https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,monero&vs_currencies=usd,eur,btc"
     response = session.get(url)
-    return json.loads(response.text)
+    prices_dict = json.loads(response.text)
+    prices_list = [tuple(prices_dict["bitcoin"].values()), tuple(prices_dict["monero"].values())]
+    return prices_list
 
 def main():
     conn, cursor = create_or_connect_db(db_file)
-    all_coins = fetch_portfolio_data(cursor)
-    conn.close()
-
     session = get_tor_session()
-    
-    # For taking out the "coin" field on the database
-    coin_names = {"BTC":"bitcoin", "XMR":"monero"}
-    coin_codes = [coin_names[row[0]] for row in all_coins]
-    
+    port = fetch_portfolio_data(cursor)
+    conn.close()
+    price = fetch_coin_prices(session)
 
-    t_total = t_profit = t_btc = 0
+    print("{:<14}  {:<16}  {:<29}  {:<31}  {:<16}".format(
+    "invest €     %", "€nt  BTC     XMR", "bal    BTC                XMR", "price   $          €         !x", "total  €      %"))
+    print("{:-<14}  {:-<16}  {:-<29}  {:-<31}  {:-<16}".format('-', '-', '-', '-', '-'))
+    # body
+    # BTC
+    print("{:>8.2f}  {:>4.1f}  \033[1m{:>8.2f}\033[0m  {:>6.2f}  \033[1m{:>^10.8f}\033[0m  {:>17.12f}  {:>9.2f}  {:>9.2f}  {:>9.5f}  {:>9.2f}  {:>5.1f}".format( 
+        port[0][1],                                                                                                 # 0 invest    €
+        port[0][3],                                                                                                 # 1 invest    %
+        port[0][5],                                                                                                 # 2 entry     BTC
+        port[0][5] * price[1][2],                                                                                   # 3 entry     XMR
+        port[0][4],                                                                                                 # 4 balance   BTC
+        port[0][4] / price[1][2],                                                                                   # 5 balance   XMR
+        price[0][0],                                                                                                # 6 price     $
+        price[0][1],                                                                                                # 7 price     €    
+        price[0][2] / price[1][2],                                                                                  # 8 price     !x
+        port[0][4] * price[0][1],                                                                                   # 9 balance   €
+        (port[0][4] * price[0][1] - port[0][1]) / port[0][1] * 100))                                                #10 profit    %
 
-    # Fetch coin prices
-    prices = fetch_coin_prices(session, coin_codes)
+    # XMR
+    print("{:>8.2f}  {:>4.1f}  {:>8.2f}  \033[1m{:>6.2f}\033[0m  {:>10.8f}  \033[1m{:>17.12f}\033[0m  {:>9.2f}  {:>9.2f}  {:>9.5f}  {:>9.2f}  {:>5.1f}".format(           
+        port[1][1],                                                                                                 # 0 invest    €
+        port[1][3],                                                                                                 # 1 invest    %
+        port[1][5] / price[1][2],                                                                                   # 2 entry     BTC
+        port[1][5],                                                                                                 # 3 entry     XMR
+        port[1][4] * price[1][2],                                                                                   # 4 balance   BTC
+        port[1][4],                                                                                                 # 5 balance   XMR
+        price[1][0],                                                                                                # 6 price     $
+        price[1][1],                                                                                                # 7 price     €
+        price[1][2] / price[0][2],                                                                                  # 8 price     !x
+        port[1][4] * price[1][1],                                                                                   # 9 balance   €
+        (port[1][4] * price[1][1] - port[1][1]) / port[1][1] * 100))                                                #10 profit    %
 
-    # Print the table headers
-    print("{:<20}  {:<14}  {:<8}  {:<30}  {:<21}  {:<19}".format(
-    "balance", "invest €     %", "entry  €    !x → €", "price  €         $            !x", "total   €      !x | ₿", "profit  €      %"))
-    print("{:<20}  {:<14}  {:<18}  {:<30}  {:<21}  {:<19}".format(
-    "--------------------", "--------------", "------------------", "--------------------------------", "---------------------", "----------------"))
-
-    for row in all_coins:
-        coin_code = coin_names[row[0]]
-        t_invest = round(row[2], 2)
-        coin_prices = prices[coin_code]
-
-        price_eur = round(coin_prices['eur'], 2)
-        price_usd = round(coin_prices['usd'], 2)
-        price_btc = round(coin_prices['btc'], 8)
-
-        total = price_eur * row[4]
-        t_total += total
-        profit = total - row[1]
-        t_profit += profit
-        profit_per = profit * 100.0 / row[1]
-        total_btc = price_btc * row[4]
-        t_btc += total_btc
-
-        row = list(row)
-        row.pop(2)
-        row.extend([price_eur, total, profit, profit_per, price_usd, price_btc, total_btc])
-                
-        my_price_oposite = row[4]/price_btc 
-        price_oposite = price_btc
-        if coin_names[row[0]] == "bitcoin":
-            my_price_oposite = row[4]*prices['monero']['btc']
-            price_oposite = round(1/prices['monero']['btc'], 8)
-        
-        total_oposite = round(row[3]*price_oposite, 6)
-
-        print("{:<15}  {:>3}  {:>8.2f}  {:>4.1f}  {:>8.2f}  {:>8.2f}  {:>8.2f}  {:>8.2f}  {:>12.8f}  {:>9.2f}  {:>10.6f}  {:>9.2f}  {:>5.1f}".format(
-            row[3], row[0], row[1], row[2], row[4], my_price_oposite, row[5], price_usd, price_oposite, total, total_oposite, profit, profit_per))
-        
-
-    # Print the table footer (TOTALS)
-    print("{:<20}  {:<14}  {:<18}  {:<30}  {:<21}  {:<19}".format(
-    "--------------------", "--------------", "------------------", "--------------------------------", "---------------------", "----------------"))
-    print("{:<20}  {:>8.2f}  {:>4}  {:<20}  {:<30}  {:>9.2f}  {:>10.8f}  {:>9.2f}  {:>5.1f}".format(
-        "", t_invest, "", round(t_invest/t_btc, 2), "", round(t_total, 2), round(t_btc, 8), round(t_profit, 2), round(t_profit * 100 / t_invest, 2)))
+    # footer totals
+    print("{:-<14}  {:-<16}  {:-<29}  {:-<31}  {:-<16}".format('-', '-', '-', '-', '-'))
+    print("{:>8.2f}  {:<4}  {:>8.2f}  {:>6.2f}  {:>10.8f}  {:>17.12f}  {:>31}  {:>9.2f}  {:>5.1f}".format(           
+        port[1][2],                                                                                                 # 0 invest    €
+        "",                                                                                                         # 1
+        port[1][2] / (port[0][4] + port[1][4] * price[1][2]),                                                       # 2 entry     BTC
+        port[1][2] / (port[0][4] / price[1][2] + port[1][4]),                                                       # 3 entry     XMR
+        port[0][4] + port[1][4] * price[1][2],                                                                      # 4 balance   BTC
+        port[0][4] / price[1][2] + port[1][4],                                                                      # 5 balance   XMR
+        "",                                                                                                         # 6
+        port[0][4] * price[0][1] + port[1][4] * price[1][1],                                                        # 7 balance   €
+        ((port[0][4] * price[0][1] - port[0][1]) + (port[1][4] * price[1][1] - port[1][1])) / port[1][2] * 100))    # 8 profit    %
 
 if __name__ == "__main__":
     main()

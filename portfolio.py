@@ -6,8 +6,7 @@ import os
 import sqlite3
 import requests
 
-#db_file = os.path.expanduser('~/.portfolio.db')
-db_file = os.path.expanduser('.portfolio.db')
+db_file = os.path.expanduser('~/.portfolio.db')
 
 def create_or_connect_db(db_name):
     conn = sqlite3.connect(db_name)
@@ -61,7 +60,7 @@ def main():
     price = fetch_coin_prices(session)
 
     print("{:<14}  {:<16}  {:<29}  {:<31}  {:<16}".format(
-    "invest €     %", "€nt  BTC     XMR", "bal    BTC                XMR", "price   $          €         !x", "total  €      %"))
+    "inv€st       %", "€ntry  ₿     XMR", "₿alance                   XMR", "pric€              $   !BTC/XMR", "total   €      %"))
     print("{:-<14}  {:-<16}  {:-<29}  {:-<31}  {:-<16}".format('-', '-', '-', '-', '-'))
     # body
     # BTC
@@ -72,25 +71,25 @@ def main():
         port[0][5] * price[1][2],                                                                                   # 3 entry     XMR
         port[0][4],                                                                                                 # 4 balance   BTC
         port[0][4] / price[1][2],                                                                                   # 5 balance   XMR
-        price[0][0],                                                                                                # 6 price     $
-        price[0][1],                                                                                                # 7 price     €    
+        price[0][1],                                                                                                # 6 price     €    
+        price[0][0],                                                                                                # 7 price     $
         price[0][2] / price[1][2],                                                                                  # 8 price     !x
         port[0][4] * price[0][1],                                                                                   # 9 balance   €
         (port[0][4] * price[0][1] - port[0][1]) / port[0][1] * 100))                                                #10 profit    %
 
     # XMR
     print("{:>8.2f}  {:>4.1f}  {:>8.2f}  \033[1m{:>6.2f}\033[0m  {:>10.8f}  \033[1m{:>17.12f}\033[0m  {:>9.2f}  {:>9.2f}  {:>9.5f}  {:>9.2f}  {:>5.1f}".format(           
-        port[1][1],                                                                                                 # 0 invest    €
-        port[1][3],                                                                                                 # 1 invest    %
-        port[1][5] / price[1][2],                                                                                   # 2 entry     BTC
-        port[1][5],                                                                                                 # 3 entry     XMR
-        port[1][4] * price[1][2],                                                                                   # 4 balance   BTC
-        port[1][4],                                                                                                 # 5 balance   XMR
-        price[1][0],                                                                                                # 6 price     $
-        price[1][1],                                                                                                # 7 price     €
-        price[1][2] / price[0][2],                                                                                  # 8 price     !x
-        port[1][4] * price[1][1],                                                                                   # 9 balance   €
-        (port[1][4] * price[1][1] - port[1][1]) / port[1][1] * 100))                                                #10 profit    %
+        port[1][1],                                                                                                 # 0 inv€st    €
+        port[1][3],                                                                                                 # 1 inv€st    %
+        port[1][5] / price[1][2],                                                                                   # 2 €ntry     ₿
+        port[1][5],                                                                                                 # 3 €ntry     XMR
+        port[1][4] * price[1][2],                                                                                   # 4 ₿alance   ₿
+        port[1][4],                                                                                                 # 5 ₿alance   XMR
+        price[1][1],                                                                                                # 6 pric€     €
+        price[1][0],                                                                                                # 7 pric€     $
+        price[1][2] / price[0][2],                                                                                  # 8 pric€     !x
+        port[1][4] * price[1][1],                                                                                   # 9 total     €
+        (port[1][4] * price[1][1] - port[1][1]) / port[1][1] * 100))                                                #10 total     %
 
     # footer totals
     print("{:-<14}  {:-<16}  {:-<29}  {:-<31}  {:-<16}".format('-', '-', '-', '-', '-'))

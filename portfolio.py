@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 # 
 
-import json
-import os
-import sqlite3
-import requests
+import json, os, sqlite3, requests
 
 db_file = os.path.expanduser('~/.portfolio.db')
 
@@ -86,7 +83,7 @@ def main():
         port[1][2] / (port[0][4] + port[1][4] * price[1][2]),                                       # 1 entry   ₿
         port[1][2] / (port[0][4] / price[1][2] + port[1][4]),                                       # 1 entry   XMR
         port[0][4] + port[1][4] * price[1][2], port[0][4] / price[1][2] + port[1][4],               # 2 balance ₿   XMR
-        "",                                                                                         # 3
+        "",                                                                                         # 3 price
         port[0][4] * price[0][1] + port[1][4] * price[1][1],                                        # 4 total   €
         (port[0][4] * price[0][1] + port[1][4] * price[1][1] - port[1][2]) / port[1][2] * 100 ))    # 4 total   %
 
